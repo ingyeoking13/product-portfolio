@@ -24,9 +24,9 @@ class AuthRouter:
         # 사장님은 시스템에 휴대폰번호와 비밀번호 입력을 통해서 회원 가입을 할 수 있습니다. 
         # - 사장님의 휴대폰 번호를 올바르게 입력했는지 확인해주세요
         # - 비밀번호를 안전하게 보관할 수 있는 장치를 만들어주세요
-        if not db.check_user_exist(user.cell_number):
+        if db.check_user_exist(user.cell_number):
             raise UserExistsException()
-        await db.add_user(user)
+        db.add_user(user)
         return Content(
             data=True,
             meta=MetaContent(
