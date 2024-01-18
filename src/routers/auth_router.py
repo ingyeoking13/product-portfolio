@@ -1,7 +1,7 @@
 from src.repository.user import UserRepo
 from src.dao.user import User
 from src.models.user_dto import UserDto
-from src.models.response import Content, MetaContent
+from src.models.response_dto import Content, MetaContent
 from fastapi import APIRouter, Depends, Cookie, Response
 from datetime import datetime, timedelta
 from src.exceptions.user_exists import (
@@ -13,7 +13,9 @@ from src.exceptions.user_not_exists import (
 from src.exceptions.user_passwords import (
     PasswordMismatchException, PasswordMismatchExceptionScheme
 )
+from src.repository.token import TokenRepo
 from src.models.token_dto import TokenDto
+from src.models.response.token_response import TokenResponse
 import jwt
 
 secret_key = 'my_secret_key' 
@@ -34,31 +36,39 @@ class AuthRouter:
         if db.check_user_exist(user.cell_number):
             raise UserExistsException()
         db.add_user(user)
-        return Content(
-            data=True,
-            meta=MetaContent(
-                code=200, message='' 
-            )
-        )
+        return Content(data=True)
 
-    @router.post('/signin', response_model=Content[TokenDto], responses={
+    @router.post('/signin', response_model=Content[TokenResponse], 
+    responses={
         ExceptionsEnum.UserNotExsists.value: 
             UserNotExistsExceptionScheme.to_dump(),
         ExceptionsEnum.PasswordMismatch.value: 
             PasswordMismatchExceptionScheme.to_dump()
     })
-    async def sign_in(user: UserDto, db: UserRepo = Depends(UserRepo)):
-        if not db.check_user_exist(user.cell_number):
+    async def sign_in(user: UserDto, 
+                      user_db: UserRepo = Depends(UserRepo), 
+                      token_db: TokenRepo = Depends(TokenRepo)
+                      ):
+        if not user_db.check_user_exist(user.cell_number):
             raise UserNotExistsException()
-        if not db.check_password(user):
+        if not user_db.check_password(user):
             raise PasswordMismatchException()
         
-        return Content(
-            data={
-                TokenDto(access_token=jwt.encode({
+        token = TokenDto(access_token=jwt.encode({
                     'expire': (
                         datetime.utcnow()+timedelta(minutes=30)
-                    ).isoformat()
-                }, secret_key, 'HS256'))
-            }
+                    ).isoformat(),
+            'cell_number': user.cell_number
+        }, secret_key, 'HS256'), 
+        user_id=user_db.get_user(user).id)
+
+        token_db.add_token(token)
+        return Content(data=TokenResponse(**token.model_dump()))
+
+    @router.post('/signout', response_model=Content[bool], responses={
+    })
+    async def sign_in(user: UserDto, db: UserRepo = Depends(UserRepo)):
+        
+        return Content(
+            data=True
         )

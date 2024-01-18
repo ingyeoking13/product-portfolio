@@ -1,6 +1,6 @@
 from typing import Any
 from fastapi import status, HTTPException
-from src.models.response import MetaContent
+from src.models.response_dto import MetaContent
 from pydantic import BaseModel, Field
 from enum import Enum
 
