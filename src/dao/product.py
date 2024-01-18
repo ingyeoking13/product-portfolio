@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped
 from datetime import datetime
 from src.db.db import Base
 
-class Prdouct(Base):
+class Product(Base):
     __tablename__ = 'product'
     id: Mapped[str] = Column(String(36), primary_key=True,
                              default=lambda: str(uuid.uuid4()))

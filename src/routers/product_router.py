@@ -40,3 +40,20 @@ class ProductRouter:
 
         return Content(data=True)
     
+    @router.put('', response_model=Content[bool], responses={
+        ExceptionsEnum.UnprocessableContent.value: 
+            UserExistsExceptionScheme.to_dump()
+    })
+    async def put_product(product: ProductDto, 
+                           user_and_token: Tuple[UserDto, str] =
+                            Depends(get_current_user),
+                           product_db: ProductRepo = Depends(ProductRepo),
+                           user_db: UserRepo = Depends(UserRepo)
+                           ):
+        user, _ = user_and_token
+        user_dao = user_db.get_user(user)
+        product.user_id = user_dao.id
+        result = product_db.update_product(product)
+
+        return Content(data=result)
+    
