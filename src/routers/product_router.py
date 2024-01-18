@@ -68,8 +68,6 @@ class ProductRouter:
     @router.put('', 
                 response_model=Content[bool], 
                 responses={
-                    ExceptionsEnum.UnprocessableContent.value:
-                    UnprocessableContentExceptionScheme.to_dump(),
                     ExceptionsEnum.UnAuthorized.value:
                     UnAuthorizedExceptionScheme.to_dump()
                 },
@@ -84,11 +82,8 @@ class ProductRouter:
         result = product_service.update_product(product, user)
         return Content(data=result)
     
-    @router.delete('', 
-                   response_model=Content[bool],
+    @router.delete('', response_model=Content[bool],
                    responses={
-                       ExceptionsEnum.NoContent.value:
-                       NoContentExceptionScheme.to_dump(),
                        ExceptionsEnum.UnAuthorized.value:
                        UnAuthorizedExceptionScheme.to_dump()
                    },

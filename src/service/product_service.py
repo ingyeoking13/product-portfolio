@@ -7,7 +7,7 @@ from src.repository.user import UserRepo
 
 from src.models.user_dto import UserDto
 from src.exceptions.unauthorized import UnAuthorizedException
-from src.exceptions.no_content import NoContentException
+from src.exceptions.unprocessable_content import UnprocessableContentException
 
 class ProductService:
 
@@ -22,14 +22,14 @@ class ProductService:
         product.user_id = user_dao.id
         result = self.product_db.add_product(product)
         if not result:
-            raise NoContentException()
+            raise UnprocessableContentException()
         return result
     
     def get_product(self, product_id: str, user: UserDto):
         user_dao = self.user_db.get_user(user)
         product = self.product_db.get_product(product_id)
         if not product:
-            raise NoContentException()
+            raise UnprocessableContentException()
         if product.user_id != user_dao.id:
             raise UnAuthorizedException()
         return product

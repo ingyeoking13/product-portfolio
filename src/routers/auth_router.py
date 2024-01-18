@@ -29,9 +29,14 @@ def get_current_user(token: Annotated[UserDto, Depends(oauth_scheme)],
 class AuthRouter:
     router = APIRouter(prefix='/v1/auth')
 
-    @router.post('/signup', response_model=Content[bool], responses={
-        ExceptionsEnum.UserExists.value: UserExistsExceptionScheme.to_dump()
-    })
+    @router.post('/signup', 
+                 response_model=Content[bool], 
+                 responses={
+                     ExceptionsEnum.UserExists.value: 
+                     UserExistsExceptionScheme.to_dump()
+                 },
+                 tags=['Auth']
+                 )
     async def sign_up(user: UserDto, 
                       db: UserRepo = Depends(UserRepo)
                       ):
@@ -40,13 +45,16 @@ class AuthRouter:
         db.add_user(user)
         return Content(data=True)
 
-    @router.post('/signin', response_model=Content[TokenResponse], 
-    responses={
-        ExceptionsEnum.UserNotExsists.value: 
-            UserNotExistsExceptionScheme.to_dump(),
-        ExceptionsEnum.PasswordMismatch.value: 
-            PasswordMismatchExceptionScheme.to_dump()
-    })
+    @router.post('/signin', 
+                 response_model=Content[TokenResponse], 
+                 responses={
+                     ExceptionsEnum.UserNotExsists.value:
+                     UserNotExistsExceptionScheme.to_dump(),
+                     ExceptionsEnum.PasswordMismatch.value:
+                     PasswordMismatchExceptionScheme.to_dump()
+                 },
+                 tags=['Auth']
+                 )
     async def sign_in(user: UserDto, 
                       user_db: UserRepo = Depends(UserRepo), 
                       auth_service: AuthService = Depends(AuthService)
@@ -59,10 +67,14 @@ class AuthRouter:
         token = auth_service.create_access_token(user) 
         return Content(data=TokenResponse(**token.model_dump()))
 
-    @router.post('/signout', response_model=Content[bool], responses={
-         ExceptionsEnum.UnAuthorized.value: 
-            UserNotExistsExceptionScheme.to_dump(),
-    })
+    @router.post('/signout', 
+                 response_model=Content[bool], 
+                 responses={
+                     ExceptionsEnum.UnAuthorized.value:
+                     UserNotExistsExceptionScheme.to_dump(),
+                 },
+                 tags=['Auth']
+                 )
     async def sign_out(user_and_token: Annotated[
                             Tuple[UserDto, str], Depends(get_current_user)
                         ],
