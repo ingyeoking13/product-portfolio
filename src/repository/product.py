@@ -4,6 +4,7 @@ from src.dao.product import Product
 from src.repository.repo import Repo
 from src.models.product_dto import ProductDto
 from src.utils.logger.logger import get_logger
+from src.db.db import to_pydantic
 
 _logger = get_logger(__file__)
 
@@ -45,3 +46,14 @@ class ProductRepo(Repo):
             })
         return True
     
+    def get_product(self, product_id: str) -> ProductDto:
+        with self.session as session:
+            product = session.query(Product).filter(
+                Product.id == product_id
+            ).first()
+
+            if not product:
+                return False
+            
+            return ProductDto(**to_pydantic(product))
+

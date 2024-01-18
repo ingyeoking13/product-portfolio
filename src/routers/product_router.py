@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from typing import Annotated, Tuple
 
@@ -57,3 +57,14 @@ class ProductRouter:
 
         return Content(data=result)
     
+    @router.delete('', response_model=Content[bool], responses={
+        ExceptionsEnum.UnprocessableContent.value: 
+            UserExistsExceptionScheme.to_dump()
+    })
+    async def delete_product(id: Annotated[str, Body(embed=True)], 
+                           user_and_token: Tuple[UserDto, str] =
+                            Depends(get_current_user),
+                           product_db: ProductRepo = Depends(ProductRepo)
+                           ):
+        result = product_db.delete_product(product_db.get_product(id))
+        return Content(data=result)
