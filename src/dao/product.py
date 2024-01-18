@@ -22,6 +22,6 @@ class Product(Base):
     size: Mapped[str] = Column(String(36), comment='사이즈')
     snowflake_id: Mapped[str] = Column(String(100), 
                                        comment='스노우플레이크 ID/커서용')
-    deleted_at: Mapped[datetime] = Column(DateTime)
+    deleted_at: Mapped[datetime | None] = Column(DateTime)
 
     user_id: Mapped[str] = Column(ForeignKey('user.id'))

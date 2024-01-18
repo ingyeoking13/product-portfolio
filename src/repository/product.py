@@ -16,25 +16,39 @@ class ProductRepo(Repo):
     def add_product(self, product: ProductDto):
         try: 
             with self.session as session:
+                rank = len(session.query(Product).where(
+                    Product.expiration_date == product.expiration_date
+                ).all())
+
                 session.add(
                     Product(
-                        **product.model_dump(exclude='id')
+                        **product.model_dump(exclude='id,snowflake_id'),
+                        snowflake_id=product.get_snowflake_id(rank)
                     ))
         except Exception as e:
             _logger.exception(e)
-            raise
+            raise e
         return True
     
     def delete_product(self, product: ProductDto) -> bool:
         with self.session as session:
+            rank = len(session.query(Product).where(
+                    Product.expiration_date == product.expiration_date
+                ).all())
+
             session.query(Product).filter(
                 Product.id == product.id).update({
-                    Product.deleted_at: datetime.utcnow()
+                    Product.deleted_at: datetime.utcnow(),
+                    Product.snowflake_id: product.get_snowflake_id(rank)
                 })
         return True
     
     def update_product(self, product: ProductDto) -> bool:
         with self.session as session:
+            rank = len(session.query(Product).where(
+                    Product.expiration_date == product.expiration_date
+                ).all())
+
             _product = session.query(Product).filter(
                 Product.id == product.id).first()
 
@@ -42,7 +56,8 @@ class ProductRepo(Repo):
                 return False
 
             session.query(Product).filter(Product.id == _product.id).update({
-                    **product.model_dump(exclude='id,user_id')
+                    **product.model_dump(exclude='id,user_id'),
+                    'snowflake_id':  product.get_snowflake_id(rank)
             })
         return True
     
@@ -56,4 +71,12 @@ class ProductRepo(Repo):
                 return False
             
             return ProductDto(**to_pydantic(product))
+    
+    def list_product(self, cursor: str, page_size: int ):
+        with self.session as session:
+            products = session.query(Product).order_by(
+                Product.snowflake_id).filter(
+                Product.snowflake_id > cursor
+            ).limit(page_size).all()
 
+            return [ProductDto(**to_pydantic(product)) for product in products]
