@@ -17,7 +17,8 @@ class ProductRepo(Repo):
         try: 
             with self.session as session:
                 rank = len(session.query(Product).where(
-                    Product.expiration_date == product.expiration_date
+                    Product.expiration_date == product.expiration_date,
+                    Product.user_id == product.user_id
                 ).all())
 
                 session.add(
@@ -33,7 +34,8 @@ class ProductRepo(Repo):
     def delete_product(self, product: ProductDto) -> bool:
         with self.session as session:
             rank = len(session.query(Product).where(
-                    Product.expiration_date == product.expiration_date
+                    Product.expiration_date == product.expiration_date,
+                    Product.user_id == product.user_id
                 ).all())
 
             session.query(Product).filter(
@@ -46,7 +48,8 @@ class ProductRepo(Repo):
     def update_product(self, product: ProductDto) -> bool:
         with self.session as session:
             rank = len(session.query(Product).where(
-                    Product.expiration_date == product.expiration_date
+                    Product.expiration_date == product.expiration_date,
+                    Product.user_id == product.user_id
                 ).all())
 
             _product = session.query(Product).filter(

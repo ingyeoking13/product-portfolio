@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Depends, Body, Response
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from typing import Annotated, Tuple, List
 
@@ -9,6 +9,9 @@ from src.models.response_dto import Content
 from src.models.product_dto import ProductDto
 from src.exceptions.user_exists import (
     UserExistsException, ExceptionsEnum, UserExistsExceptionScheme,
+)
+from src.exceptions.unauthorized import (
+    UnAuthorizedException, UnAuthorizedExceptionScheme
 )
 from src.service.auth_service import AuthService
 
@@ -39,6 +42,24 @@ class ProductRouter:
         product_db.add_product(product)
 
         return Content(data=True)
+
+    @router.get('/{id}', response_model=Content[ProductDto], responses={
+        ExceptionsEnum.UnprocessableContent.value: 
+            UserExistsExceptionScheme.to_dump()
+    })
+    async def get_product(response: Response, id: str, 
+                           user_and_token: Tuple[UserDto, str] =
+                            Depends(get_current_user),
+                           product_db: ProductRepo = Depends(ProductRepo),
+                           user_db: UserRepo = Depends(UserRepo)
+                           ):
+        user, _ = user_and_token
+        user_dao = user_db.get_user(user)
+        product = product_db.get_product(id)
+        if user_dao.id != product.user_id:
+            raise UnAuthorizedException() 
+
+        return Content(data=product)
     
     @router.put('', response_model=Content[bool], responses={
         ExceptionsEnum.UnprocessableContent.value: 
