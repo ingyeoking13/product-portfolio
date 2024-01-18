@@ -1,9 +1,12 @@
+from fastapi import APIRouter, Depends, Cookie, Response, Security, Request
+from fastapi.security import OAuth2AuthorizationCodeBearer
+from datetime import datetime, timedelta
+from typing import Annotated, Tuple
+
 from src.repository.user import UserRepo
 from src.dao.user import User
 from src.models.user_dto import UserDto
 from src.models.response_dto import Content, MetaContent
-from fastapi import APIRouter, Depends, Cookie, Response
-from datetime import datetime, timedelta
 from src.exceptions.user_exists import (
     UserExistsException, ExceptionsEnum, UserExistsExceptionScheme,
 )
@@ -20,6 +23,16 @@ import jwt
 
 secret_key = 'my_secret_key' 
 expire_minutes = 30
+
+oauth_scheme = OAuth2AuthorizationCodeBearer('/oauth', '/token' )
+
+def get_current_user(token: Annotated[UserDto, Depends(oauth_scheme)]):
+    try:
+        decoded = jwt.decode(token, key=secret_key, algorithms='HS256')
+    except Exception as e:
+        print(e)
+    
+    return [UserDto(**decoded), token]
 
 class AuthRouter:
     router = APIRouter(prefix='/v1/auth')
@@ -54,20 +67,28 @@ class AuthRouter:
         if not user_db.check_password(user):
             raise PasswordMismatchException()
         
-        token = TokenDto(access_token=jwt.encode({
+        token = TokenDto(
+            access_token=jwt.encode({
                     'expire': (
                         datetime.utcnow()+timedelta(minutes=30)
                     ).isoformat(),
-            'cell_number': user.cell_number
-        }, secret_key, 'HS256'), 
-        user_id=user_db.get_user(user).id)
+                    'cell_number': user.cell_number
+            }, secret_key, 'HS256'),
+            user_id=user_db.get_user(user).id
+        )
 
         token_db.add_token(token)
         return Content(data=TokenResponse(**token.model_dump()))
 
     @router.post('/signout', response_model=Content[bool], responses={
     })
-    async def sign_in(user: UserDto, db: UserRepo = Depends(UserRepo)):
+    async def sign_out(user_and_token: Annotated[
+                            Tuple[UserDto, str], Depends(get_current_user)
+                        ],
+                       token_db: TokenRepo = Depends(TokenRepo),
+                      ):
+        user, token = user_and_token
+        token_db.delete_token(TokenDto(access_token=token))
         
         return Content(
             data=True
