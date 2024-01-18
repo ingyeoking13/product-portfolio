@@ -1,8 +1,11 @@
 from datetime import datetime
+from typing import Optional
 
 from src.dao.product import Product
 from src.repository.repo import Repo
 from src.models.product_dto import ProductDto
+from src.exceptions.unprocessable_content import UnprocessableContentException
+from src.exceptions.no_content import NoContentException
 from src.utils.logger.logger import get_logger
 from src.db.db import to_pydantic
 
@@ -64,14 +67,14 @@ class ProductRepo(Repo):
             })
         return True
     
-    def get_product(self, product_id: str) -> ProductDto:
+    def get_product(self, product_id: str) -> Optional[ProductDto]:
         with self.session as session:
             product = session.query(Product).filter(
                 Product.id == product_id
             ).first()
 
             if not product:
-                return False
+                return None
             
             return ProductDto(**to_pydantic(product))
     

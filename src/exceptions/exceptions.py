@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 class ExceptionsEnum(Enum):
+    NoContent = 204
     Default = 400
     UserNotExsists = 404
     PasswordMismatch = 401
@@ -13,6 +14,7 @@ class ExceptionsEnum(Enum):
     UnprocessableContent = 422
 
 messages = {
+    ExceptionsEnum.NoContent: '해당하는 정보가 없습니다.',
     ExceptionsEnum.Default: '정의 되지 않은 에러입니다.',
     ExceptionsEnum.UserNotExsists: '존재하지 않는 유저입니다.',
     ExceptionsEnum.UserExists: '유저가 존재합니다.',

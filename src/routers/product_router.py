@@ -7,16 +7,17 @@ from src.models.user_dto import UserDto
 from src.repository.user import UserRepo
 from src.models.response_dto import Content 
 from src.models.product_dto import ProductDto
-from src.exceptions.user_exists import (
-    UserExistsException, ExceptionsEnum, UserExistsExceptionScheme,
-)
 from src.exceptions.unauthorized import (
-    UnAuthorizedException, UnAuthorizedExceptionScheme
+    UnAuthorizedException, UnAuthorizedExceptionScheme, ExceptionsEnum
 )
 from src.exceptions.unprocessable_content import (
     UnprocessableContentException, UnprocessableContentExceptionScheme
 )
+from src.exceptions.no_content import (
+    NoContentException, NoContentExceptionScheme
+)
 from src.service.auth_service import AuthService
+from src.service.product_service import ProductService
 
 
 oauth_scheme = OAuth2AuthorizationCodeBearer('/oauth', '/token' )
@@ -40,21 +41,17 @@ class ProductRouter:
     async def post_product(
         product: ProductDto, 
         user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
-        product_db: ProductRepo = Depends(ProductRepo),
-        user_db: UserRepo = Depends(UserRepo)
+        product_service: ProductService = Depends(ProductService)
     ):
         user, _ = user_and_token
-        user_dao = user_db.get_user(user)
-        product.user_id = user_dao.id
-        product_db.add_product(product)
-
-        return Content(data=True)
+        result = product_service.upload_product(product, user)
+        return Content(data=result)
 
     @router.get('/{id}', 
                 response_model=Content[ProductDto], 
                 responses={
-                    ExceptionsEnum.UnprocessableContent.value:
-                    UnprocessableContentExceptionScheme.to_dump()
+                    ExceptionsEnum.UnAuthorized.value:
+                    UnAuthorizedExceptionScheme.to_dump()
                 },
                 tags=['Product']
                 )
@@ -62,52 +59,48 @@ class ProductRouter:
         response: Response, 
         id: str, 
         user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
-        product_db: ProductRepo = Depends(ProductRepo),
-        user_db: UserRepo = Depends(UserRepo)
+        product_service: ProductService = Depends(ProductService)
     ):
         user, _ = user_and_token
-        user_dao = user_db.get_user(user)
-        product = product_db.get_product(id)
-        if user_dao.id != product.user_id:
-            raise UnAuthorizedException() 
-
-        return Content(data=product)
+        result = product_service.get_product(id, user)
+        return Content(data=result)
     
     @router.put('', 
                 response_model=Content[bool], 
                 responses={
                     ExceptionsEnum.UnprocessableContent.value:
-                    UnprocessableContentExceptionScheme.to_dump()
+                    UnprocessableContentExceptionScheme.to_dump(),
+                    ExceptionsEnum.UnAuthorized.value:
+                    UnAuthorizedExceptionScheme.to_dump()
                 },
                 tags=['Product']
                 )
     async def put_product(
         product: ProductDto, 
         user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
-        product_db: ProductRepo = Depends(ProductRepo),
-        user_db: UserRepo = Depends(UserRepo)
+        product_service: ProductService = Depends(ProductService)
     ):
         user, _ = user_and_token
-        user_dao = user_db.get_user(user)
-        product.user_id = user_dao.id
-        result = product_db.update_product(product)
-
+        result = product_service.update_product(product, user)
         return Content(data=result)
     
     @router.delete('', 
                    response_model=Content[bool],
                    responses={
-                       ExceptionsEnum.UnprocessableContent.value:
-                       UnprocessableContentExceptionScheme.to_dump()
+                       ExceptionsEnum.NoContent.value:
+                       NoContentExceptionScheme.to_dump(),
+                       ExceptionsEnum.UnAuthorized.value:
+                       UnAuthorizedExceptionScheme.to_dump()
                    },
                    tags=['Product']
                    )
     async def delete_product(
         id: Annotated[str, Body(embed=True)], 
-        _: Tuple[UserDto, str] = Depends(get_current_user),
-        product_db: ProductRepo = Depends(ProductRepo)
+        user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
+        product_service: ProductService = Depends(ProductService)
     ):
-        result = product_db.delete_product(product_db.get_product(id))
+        user, _ = user_and_token
+        result = product_service.delete_product(id, user)
         return Content(data=result)
 
     
