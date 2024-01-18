@@ -1,9 +1,7 @@
 import uuid
 from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.orm import Mapped
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from src.db.db import Base
 
 class User(Base):
     __tablename__ = 'user'

@@ -1,16 +1,30 @@
-from src.repository.user import UserRepo
-from src.dao.user import User
-from src.models.user_dto import UserDto
-from src.models.response import Content, MetaContent
-from fastapi import APIRouter, Depends, Cookie, Response
-from datetime import datetime, timedelta
-from src.exceptions.user_exists import (
-    UserExistsException, ExceptionsEnum, UserExistsExceptionScheme
-)
-import jwt
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2AuthorizationCodeBearer
+from typing import Annotated, Tuple
 
-secret_key = 'my_secret_key' 
-expire_minutes = 30
+from src.repository.user import UserRepo
+from src.models.user_dto import UserDto
+from src.models.response_dto import Content 
+from src.exceptions.user_exists import (
+    UserExistsException, ExceptionsEnum, UserExistsExceptionScheme,
+)
+from src.exceptions.user_not_exists import (
+    UserNotExistsException, UserNotExistsExceptionScheme
+)
+from src.exceptions.user_passwords import (
+    PasswordMismatchException, PasswordMismatchExceptionScheme
+)
+from src.models.token_dto import TokenDto
+from src.service.auth_service import AuthService
+from src.models.response.token_response import TokenResponse
+
+
+oauth_scheme = OAuth2AuthorizationCodeBearer('/oauth', '/token' )
+
+def get_current_user(token: Annotated[UserDto, Depends(oauth_scheme)], 
+                     auth_service:AuthService = Depends(AuthService)):
+    result = auth_service.decode_access_token(token)
+    return result
 
 class AuthRouter:
     router = APIRouter(prefix='/v1/auth')
@@ -21,15 +35,44 @@ class AuthRouter:
     async def sign_up(user: UserDto, 
                       db: UserRepo = Depends(UserRepo)
                       ):
-        # 사장님은 시스템에 휴대폰번호와 비밀번호 입력을 통해서 회원 가입을 할 수 있습니다. 
-        # - 사장님의 휴대폰 번호를 올바르게 입력했는지 확인해주세요
-        # - 비밀번호를 안전하게 보관할 수 있는 장치를 만들어주세요
         if db.check_user_exist(user.cell_number):
             raise UserExistsException()
         db.add_user(user)
+        return Content(data=True)
+
+    @router.post('/signin', response_model=Content[TokenResponse], 
+    responses={
+        ExceptionsEnum.UserNotExsists.value: 
+            UserNotExistsExceptionScheme.to_dump(),
+        ExceptionsEnum.PasswordMismatch.value: 
+            PasswordMismatchExceptionScheme.to_dump()
+    })
+    async def sign_in(user: UserDto, 
+                      user_db: UserRepo = Depends(UserRepo), 
+                      auth_service: AuthService = Depends(AuthService)
+                      ):
+        if not user_db.check_user_exist(user.cell_number):
+            raise UserNotExistsException()
+        if not user_db.check_password(user):
+            raise PasswordMismatchException()
+
+        token = auth_service.create_access_token(user) 
+        return Content(data=TokenResponse(**token.model_dump()))
+
+    @router.post('/signout', response_model=Content[bool], responses={
+         ExceptionsEnum.UnAuthorized.value: 
+            UserNotExistsExceptionScheme.to_dump(),
+    })
+    async def sign_out(user_and_token: Annotated[
+                            Tuple[UserDto, str], Depends(get_current_user)
+                        ],
+                       auth_service: AuthService = Depends(AuthService),
+                      ):
+        _, token = user_and_token
+        result = auth_service.delete_access_token(
+            TokenDto(access_token=token)
+        )
+        
         return Content(
-            data=True,
-            meta=MetaContent(
-                code=200, message='' 
-            )
+            data=result
         )

@@ -7,4 +7,4 @@ class MetaContent(BaseModel):
 
 class Content[T](BaseModel):
     data: T
-    meta: MetaContent
+    meta: MetaContent = Field(MetaContent(code=200, message=''))

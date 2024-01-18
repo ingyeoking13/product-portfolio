@@ -5,7 +5,7 @@ from typing import cast
 
 from src.routers.auth_router import AuthRouter
 from src.exceptions.exceptions import DefaultException
-from src.models.response import Content, MetaContent
+from src.models.response_dto import Content, MetaContent
 
 app = FastAPI()
 app.add_middleware(
