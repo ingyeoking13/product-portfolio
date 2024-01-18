@@ -1,4 +1,3 @@
-import bcrypt
 from datetime import datetime
 
 from src.dao.token import Token

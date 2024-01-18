@@ -10,6 +10,7 @@ class ExceptionsEnum(Enum):
     PasswordMismatch = 401
     UnAuthorized = 401
     UserExists = 409
+    UnprocessableContent = 422
 
 messages = {
     ExceptionsEnum.Default: '정의 되지 않은 에러입니다.',
@@ -17,6 +18,7 @@ messages = {
     ExceptionsEnum.UserExists: '유저가 존재합니다.',
     ExceptionsEnum.PasswordMismatch: '패스워드가 불일치 합니다.',
     ExceptionsEnum.UnAuthorized: '허가되지 않은 요청입니다.',
+    ExceptionsEnum.UnprocessableContent: '처리할 수 없는 요청 객체입니다.'
 }
 
 class DefaultException(Exception):

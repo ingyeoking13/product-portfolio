@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import cast
 
 from src.routers.auth_router import AuthRouter
+from src.routers.product_router import ProductRouter
 from src.exceptions.exceptions import DefaultException
 from src.models.response_dto import Content, MetaContent
 
@@ -17,6 +18,7 @@ app.add_middleware(
 )
 
 app.include_router(AuthRouter().router)
+app.include_router(ProductRouter().router)
 
 @app.exception_handler(Exception)
 async def exception_handler(request: Request, exc: Exception):
