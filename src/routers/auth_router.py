@@ -5,8 +5,15 @@ from src.models.response import Content, MetaContent
 from fastapi import APIRouter, Depends, Cookie, Response
 from datetime import datetime, timedelta
 from src.exceptions.user_exists import (
-    UserExistsException, ExceptionsEnum, UserExistsExceptionScheme
+    UserExistsException, ExceptionsEnum, UserExistsExceptionScheme,
 )
+from src.exceptions.user_not_exists import (
+    UserNotExistsException, UserNotExistsExceptionScheme
+)
+from src.exceptions.user_passwords import (
+    PasswordMismatchException, PasswordMismatchExceptionScheme
+)
+from src.models.token_dto import TokenDto
 import jwt
 
 secret_key = 'my_secret_key' 
@@ -32,4 +39,26 @@ class AuthRouter:
             meta=MetaContent(
                 code=200, message='' 
             )
+        )
+
+    @router.post('/signin', response_model=Content[TokenDto], responses={
+        ExceptionsEnum.UserNotExsists.value: 
+            UserNotExistsExceptionScheme.to_dump(),
+        ExceptionsEnum.PasswordMismatch.value: 
+            PasswordMismatchExceptionScheme.to_dump()
+    })
+    async def sign_in(user: UserDto, db: UserRepo = Depends(UserRepo)):
+        if not db.check_user_exist(user.cell_number):
+            raise UserNotExistsException()
+        if not db.check_password(user):
+            raise PasswordMismatchException()
+        
+        return Content(
+            data={
+                TokenDto(access_token=jwt.encode({
+                    'expire': (
+                        datetime.utcnow()+timedelta(minutes=30)
+                    ).isoformat()
+                }, secret_key, 'HS256'))
+            }
         )
