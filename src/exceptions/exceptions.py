@@ -8,7 +8,7 @@ class ExceptionsEnum(Enum):
     Default = 400
     UserNotExsists = 404
     PasswordMismatch = 401
-    TokenExpired = 401
+    UnAuthorized = 401
     UserExists = 409
 
 messages = {
@@ -16,7 +16,7 @@ messages = {
     ExceptionsEnum.UserNotExsists: '존재하지 않는 유저입니다.',
     ExceptionsEnum.UserExists: '유저가 존재합니다.',
     ExceptionsEnum.PasswordMismatch: '패스워드가 불일치 합니다.',
-    ExceptionsEnum.TokenExpired: '토큰이 만료되었습니다.',
+    ExceptionsEnum.UnAuthorized: '허가되지 않은 요청입니다.',
 }
 
 class DefaultException(Exception):
