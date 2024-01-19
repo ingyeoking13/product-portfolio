@@ -8,6 +8,7 @@ from src.repository.user import UserRepo
 from src.models.user_dto import UserDto
 from src.exceptions.unauthorized import UnAuthorizedException
 from src.exceptions.unprocessable_content import UnprocessableContentException
+from src.utils.korean.korean import is_only_cho
 
 class ProductService:
 
@@ -44,4 +45,13 @@ class ProductService:
 
     def delete_product(self, id: str, user: UserDto):
         result = self.product_db.delete_product(self.get_product(id, user))
+        return result
+    
+    def search_product(self, keyword: str, user: UserDto):
+        user_dao = self.user_db.get_user(user)
+        user.id = user_dao.id
+        if is_only_cho(keyword):
+            result = self.product_db.search_keyword_with_cho(keyword, user)
+        else:
+            result = self.product_db.search_keyword(keyword, user)
         return result

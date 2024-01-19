@@ -13,9 +13,6 @@ from src.exceptions.unauthorized import (
 from src.exceptions.unprocessable_content import (
     UnprocessableContentException, UnprocessableContentExceptionScheme
 )
-from src.exceptions.no_content import (
-    NoContentException, NoContentExceptionScheme
-)
 from src.service.auth_service import AuthService
 from src.service.product_service import ProductService
 
@@ -47,7 +44,7 @@ class ProductRouter:
         result = product_service.upload_product(product, user)
         return Content(data=result)
 
-    @router.get('/{id}', 
+    @router.get('/search/{id}', 
                 response_model=Content[ProductDto], 
                 responses={
                     ExceptionsEnum.UnAuthorized.value:
@@ -111,3 +108,13 @@ class ProductRouter:
         results = product_db.list_product(cursor, page_size)
 
         return Content(data=results)
+    
+    @router.get('/search')
+    async def search_products(
+        keyword: str, 
+        user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
+        product_service: ProductService = Depends(ProductService)
+    ):
+        user, _ = user_and_token
+        result = product_service.search_product(keyword, user)
+        return Content(data=result)

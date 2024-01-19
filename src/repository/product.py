@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Optional
 
+from sqlalchemy import func, text
 from src.dao.product import Product
 from src.repository.repo import Repo
 from src.models.product_dto import ProductDto
-from src.exceptions.unprocessable_content import UnprocessableContentException
-from src.exceptions.no_content import NoContentException
+from src.models.user_dto import UserDto
 from src.utils.logger.logger import get_logger
 from src.db.db import to_pydantic
 
@@ -86,3 +86,25 @@ class ProductRepo(Repo):
             ).limit(page_size).all()
 
             return [ProductDto(**to_pydantic(product)) for product in products]
+    
+    def search_keyword(self, keyword: str, user:UserDto ):
+        with self.session as session:
+            products = session.query(Product).order_by(
+                Product.snowflake_id
+            ).filter(
+                Product.description.like(f'%{keyword}%'),
+                Product.user_id == user.id
+            ).all()
+
+            return [ProductDto(**to_pydantic(product)) for product in products]
+
+    def search_keyword_with_cho(self, keyword: str, user:UserDto ):
+        with self.session as session:
+            products = session.query(
+                Product,
+            ).filter(
+                func.fn_choSearch(Product.name).like(f'%{keyword}%'),
+            ).all()
+
+            return [ProductDto(**to_pydantic(product)) for product in products]
+
