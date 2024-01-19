@@ -4,9 +4,10 @@ from src.models.token_dto import TokenDto
 from src.repository.user import UserRepo
 from src.models.user_dto import UserDto
 from src.exceptions.unauthorized import UnAuthorizedException
+from src.utils.time import get_cur_time
 
 from typing import Tuple
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import jwt
 
 class AuthService:
@@ -24,7 +25,7 @@ class AuthService:
         token = TokenDto(
                 access_token=jwt.encode({
                         'expire': (
-                            datetime.utcnow()+timedelta(minutes=30)
+                            get_cur_time()+timedelta(minutes=30)
                         ).isoformat(),
                         'cell_number': user.cell_number
                 }, self.secret_key, self.algorithm),
@@ -46,7 +47,7 @@ class AuthService:
         except Exception as e:
             raise UnAuthorizedException()
 
-        if datetime.utcnow() > datetime.fromisoformat(decoded['expire']):
+        if get_cur_time() > datetime.fromisoformat(decoded['expire']):
             raise UnAuthorizedException()
 
         return [UserDto(**decoded), token]
