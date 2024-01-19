@@ -4,8 +4,8 @@ POST /auth/signup
     - 비밀번호를 안전하게 보관할 수 있는 장치를 만들어주세요
 
 2. 사장님은 회원 가입이후, 로그인과 로그아웃을 할 수 있습니다. 
-POST /auth/signin
-POST /auth/logout
+POST /auth/signin  
+POST /auth/signout  
 
 3. 사장님은 로그인 이후 상품관련 아래의 행동을 할 수 있습니다. 
     1. 상품의 필수속성(required)은 다음과 같습니다. 
@@ -17,20 +17,25 @@ POST /auth/logout
         6. 바코드
         7. 유통기한 
         8. 사이즈 : small or large
-    2. 사장님은 상품을 등록할 수 있습니다. 
+    2. 사장님은 상품을 등록할 수 있습니다.   
     POST /product
-    3. 사장님은 상품의 속성을 부분 수정할 수 있습니다. 
+
+    3. 사장님은 상품의 속성을 부분 수정할 수 있습니다.   
     PUT /product
-    4. 사장님은 상품을 삭제 할 수 있습니다
-    DELETE /product
+
+    4. 사장님은 상품을 삭제 할 수 있습니다  
+    DELETE /product  
+
     5. 사장님은 등록한 상품의 리스트를 볼 수 있습니다. 
-        - cursor based pagination 기반으로, 1page 당 10개의 상품이 보이도록 구현
+        - cursor based pagination 기반으로, 1page 당 10개의 상품이 보이도록 구현  
     GET /product/list
-    6. 사장님은 등록한 상품의 상세 내역을 볼 수 있습니다. 
+
+    6. 사장님은 등록한 상품의 상세 내역을 볼 수 있습니다.   
     GET /product/{id}
 
     7. 사장님은 상품 이름을 기반으로 검색할 수 있습니다. 
         - 이름에 대해서 like 검색과 초성검색을 지원해야 합니다.
-        - 예) 슈크림 라떼 → 검색가능한 키워드 : 슈크림, 크림, 라떼, ㅅㅋㄹ, ㄹㄸ
+        - 예) 슈크림 라떼 → 검색가능한 키워드 : 슈크림, 크림, 라떼, ㅅㅋㄹ, ㄹㄸ  
+    GET /product/search?keyword=''
 
 4. 로그인하지 않은 사장님의 상품 관련 API에 대한 접근 제한 처리가 되어야 합니다.
