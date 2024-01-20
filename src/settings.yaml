@@ -22,7 +22,7 @@ logger:
     handlers: [console, file]
 
 db:
-  url: mysql+pymysql://root:adkb@localhost:3306/portfolio
+  url: ${{ db_host }}:mysql+pymysql://root:adkb@localhost:3306/portfolio
 
 rate_limiter:
   token_bucket: 

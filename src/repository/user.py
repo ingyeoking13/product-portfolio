@@ -24,7 +24,17 @@ class UserRepo(Repo):
                     ))
         except Exception as e:
             _logger.exception(e)
-            raise
+            raise e
+        return True
+    
+    def del_user(self, user: UserDto):
+        try:
+            with self.session as session:
+                session.query(User).filter(
+                    User.cell_number == user.cell_number).delete()
+        except Exception as e:
+            _logger.exception(e)
+            raise e
         return True
     
     def check_user_exist(self, cell_number: str) -> bool:

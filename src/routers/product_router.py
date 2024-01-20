@@ -25,33 +25,26 @@ def get_current_user(token: Annotated[UserDto, Depends(oauth_scheme)],
     return result
 
 class ProductRouter:
-    router = APIRouter(prefix='/v1/product')
+    router = APIRouter(prefix='/v1/product', 
+                        responses={
+                            ExceptionsEnum.UnAuthorized.value:
+                            UnAuthorizedExceptionScheme.to_dump(),
+                            ExceptionsEnum.UnprocessableContent.value:
+                            UnprocessableContentExceptionScheme.to_dump()
+                        }
+                       , tags=['Product'])
 
-    @router.post('', 
-                 response_model=Content[bool], 
-                 responses={
-                     ExceptionsEnum.UnprocessableContent.value:
-                     UnprocessableContentExceptionScheme.to_dump()
-                 },
-                 tags=['Product']
-                 )
+    @router.post('', response_model=Content[bool])
     async def post_product(
         product: ProductDto, 
         user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
         product_service: ProductService = Depends(ProductService)
     ):
         user, _ = user_and_token
-        result = product_service.upload_product(product, user)
-        return Content(data=result)
+        product_service.upload_product(product, user)
+        return Content(data=True)
 
-    @router.get('/search/{id}', 
-                response_model=Content[ProductDto], 
-                responses={
-                    ExceptionsEnum.UnAuthorized.value:
-                    UnAuthorizedExceptionScheme.to_dump()
-                },
-                tags=['Product']
-                )
+    @router.get('/search/{id}', response_model=Content[ProductDto])
     async def get_product(
         response: Response, 
         id: str, 
@@ -62,14 +55,7 @@ class ProductRouter:
         result = product_service.get_product(id, user)
         return Content(data=result)
     
-    @router.put('', 
-                response_model=Content[bool], 
-                responses={
-                    ExceptionsEnum.UnAuthorized.value:
-                    UnAuthorizedExceptionScheme.to_dump()
-                },
-                tags=['Product']
-                )
+    @router.put('', response_model=Content[bool])
     async def put_product(
         product: ProductDto, 
         user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
@@ -79,13 +65,7 @@ class ProductRouter:
         result = product_service.update_product(product, user)
         return Content(data=result)
     
-    @router.delete('', response_model=Content[bool],
-                   responses={
-                       ExceptionsEnum.UnAuthorized.value:
-                       UnAuthorizedExceptionScheme.to_dump()
-                   },
-                   tags=['Product']
-                   )
+    @router.delete('', response_model=Content[bool])
     async def delete_product(
         id: Annotated[str, Body(embed=True)], 
         user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
@@ -96,10 +76,7 @@ class ProductRouter:
         return Content(data=result)
 
     
-    @router.get('/list', 
-                response_model=Content[List[ProductDto]],
-                tags=['Product']
-                )
+    @router.get('/list', response_model=Content[List[ProductDto]])
     async def get_products(
         cursor: str = '0', 
         page_size: int = 10, 
