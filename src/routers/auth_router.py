@@ -27,16 +27,14 @@ def get_current_user(token: Annotated[UserDto, Depends(oauth_scheme)],
     return result
 
 class AuthRouter:
-    router = APIRouter(prefix='/v1/auth')
+    router = APIRouter(prefix='/v1/auth', tags=['Auth'])
 
     @router.post('/signup', 
                  response_model=Content[bool], 
                  responses={
                      ExceptionsEnum.UserExists.value: 
                      UserExistsExceptionScheme.to_dump()
-                 },
-                 tags=['Auth']
-                 )
+                 })
     async def sign_up(user: UserDto, 
                       db: UserRepo = Depends(UserRepo)
                       ):
@@ -52,9 +50,7 @@ class AuthRouter:
                      UserNotExistsExceptionScheme.to_dump(),
                      ExceptionsEnum.PasswordMismatch.value:
                      PasswordMismatchExceptionScheme.to_dump()
-                 },
-                 tags=['Auth']
-                 )
+                 })
     async def sign_in(user: UserDto, 
                       user_db: UserRepo = Depends(UserRepo), 
                       auth_service: AuthService = Depends(AuthService)
@@ -72,9 +68,7 @@ class AuthRouter:
                  responses={
                      ExceptionsEnum.UnAuthorized.value:
                      UserNotExistsExceptionScheme.to_dump(),
-                 },
-                 tags=['Auth']
-                 )
+                 })
     async def sign_out(user_and_token: Annotated[
                             Tuple[UserDto, str], Depends(get_current_user)
                         ],
