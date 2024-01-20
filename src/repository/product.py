@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional
+from uuid import uuid4
 
 from sqlalchemy import func, text
 from src.dao.product import Product
@@ -24,15 +25,17 @@ class ProductRepo(Repo):
                     Product.user_id == product.user_id
                 ).all())
 
+                id = str(uuid4())
                 session.add(
                     Product(
+                        id= id,
                         **product.model_dump(exclude='id,snowflake_id'),
                         snowflake_id=product.get_snowflake_id(rank)
                     ))
         except Exception as e:
             _logger.exception(e)
             raise e
-        return True
+        return id
     
     def delete_product(self, product: ProductDto) -> bool:
         with self.session as session:

@@ -41,8 +41,8 @@ class ProductRouter:
         product_service: ProductService = Depends(ProductService)
     ):
         user, _ = user_and_token
-        result = product_service.upload_product(product, user)
-        return Content(data=result)
+        product_service.upload_product(product, user)
+        return Content(data=True)
 
     @router.get('/search/{id}', 
                 response_model=Content[ProductDto], 
