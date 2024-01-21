@@ -12,6 +12,7 @@ class ExceptionsEnum(Enum):
     UnAuthorized = 401
     UserExists = 409
     UnprocessableContent = 422
+    CellNumberInvalid = 422
 
 messages = {
     ExceptionsEnum.NoContent: '해당하는 정보가 없습니다.',
@@ -20,7 +21,8 @@ messages = {
     ExceptionsEnum.UserExists: '유저가 존재합니다.',
     ExceptionsEnum.PasswordMismatch: '패스워드가 불일치 합니다.',
     ExceptionsEnum.UnAuthorized: '허가되지 않은 요청입니다.',
-    ExceptionsEnum.UnprocessableContent: '처리할 수 없는 요청 객체입니다.'
+    ExceptionsEnum.UnprocessableContent: '처리할 수 없는 요청 객체입니다.',
+    ExceptionsEnum.CellNumberInvalid: '정확하지않은 전화번호 입니다.'
 }
 
 class DefaultException(Exception):

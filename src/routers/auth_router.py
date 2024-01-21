@@ -36,11 +36,9 @@ class AuthRouter:
                      UserExistsExceptionScheme.to_dump()
                  })
     async def sign_up(user: UserDto, 
-                      db: UserRepo = Depends(UserRepo)
+                      auth_service: AuthService = Depends(AuthService)
                       ):
-        if db.check_user_exist(user.cell_number):
-            raise UserExistsException()
-        db.add_user(user)
+        auth_service.sign_up_user(user)
         return Content(data=True)
 
     @router.post('/signin', 
