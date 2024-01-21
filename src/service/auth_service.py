@@ -3,11 +3,15 @@ from src.repository.token import TokenRepo
 from src.models.token_dto import TokenDto
 from src.repository.user import UserRepo
 from src.models.user_dto import UserDto
-from src.exceptions.unauthorized import UnAuthorizedException
 from src.utils.time import get_cur_time
+
+from src.exceptions.unauthorized import UnAuthorizedException
+from src.exceptions.user_exists import UserExistsException
+from src.exceptions.cell_number_invalid import CellNumberInvalidException
 
 from typing import Tuple
 from datetime import datetime, timedelta
+import re
 import jwt
 
 class AuthService:
@@ -20,6 +24,21 @@ class AuthService:
                  token_db: TokenRepo =  Depends(TokenRepo)) -> None:
         self.user_db = user_db
         self.token_db = token_db
+    
+    def _validate_cell_number(self, cell_number: str):
+        reg = r'[0-9]{3}-[0-9]{3,4}-[0-9]{4}'
+        if re.match(reg, cell_number):
+            return True
+        return False
+    
+    def sign_up_user(self, user: UserDto):
+        if self.user_db.check_user_exist(user.cell_number):
+            raise UserExistsException()
+        
+        if not self._validate_cell_number(user.cell_number):
+            raise CellNumberInvalidException()
+
+        self.user_db.add_user(user)
 
     def create_access_token(self, user: UserDto) -> TokenDto:
         token = TokenDto(
