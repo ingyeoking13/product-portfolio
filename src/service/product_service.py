@@ -42,6 +42,12 @@ class ProductService:
             raise UnAuthorizedException()
         result = self.product_db.update_product(product)
         return result
+    
+    def list_product(self, cursor: str, page_size: int, user: UserDto):
+        user_dao = self.user_db.get_user(user)
+        user.id = user_dao.id
+        result = self.product_db.list_product(cursor, page_size, user)
+        return result
 
     def delete_product(self, id: str, user: UserDto):
         result = self.product_db.delete_product(self.get_product(id, user))

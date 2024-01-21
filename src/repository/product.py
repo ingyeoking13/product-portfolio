@@ -81,11 +81,12 @@ class ProductRepo(Repo):
             
             return ProductDto(**to_pydantic(product))
     
-    def list_product(self, cursor: str, page_size: int ):
+    def list_product(self, cursor: str, page_size: int, user:UserDto):
         with self.session as session:
             products = session.query(Product).order_by(
                 Product.snowflake_id).filter(
-                Product.snowflake_id > cursor
+                Product.snowflake_id > cursor,
+                Product.user_id == user.id
             ).limit(page_size).all()
 
             return [ProductDto(**to_pydantic(product)) for product in products]

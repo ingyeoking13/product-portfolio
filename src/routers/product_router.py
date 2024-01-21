@@ -80,10 +80,11 @@ class ProductRouter:
     async def get_products(
         cursor: str = '0', 
         page_size: int = 10, 
-        product_db: ProductRepo = Depends(ProductRepo)
+        user_and_token: Tuple[UserDto, str] = Depends(get_current_user),
+        product_service: ProductService = Depends(ProductService)
     ):
-        results = product_db.list_product(cursor, page_size)
-
+        user, _ = user_and_token
+        results = product_service.list_product(cursor, page_size, user)
         return Content(data=results)
     
     @router.get('/search')
