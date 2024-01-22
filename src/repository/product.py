@@ -108,7 +108,7 @@ class ProductRepo(Repo):
                 Product,
             ).filter(
                 func.fn_choSearch(Product.name).like(f'%{keyword}%'),
+                Product.user_id == user.id
             ).all()
-
             return [ProductDto(**to_pydantic(product)) for product in products]
 

@@ -17,8 +17,8 @@ from src.service.product_service import ProductService
 
 def default_user():
     return UserDto(id='',
-                   cell_number='123',
-                   password='123')
+                   cell_number='010-1234-5678',
+                   password='pass1234')
 
 def default_product():
     return ProductDto(id='1', 
@@ -38,7 +38,7 @@ def mock_utcnow(*s):
 def mock_init(monkeypatch):
     # using test db
     monkeypatch.setenv('db_host', 
-                       'mysql+pymysql://root:adkb@localhost:3306/test_portfolio')
+                       'mysql+pymysql://root:adkb@localhost:3306/portfolio')
 
     auth_service = AuthService(UserRepo(), TokenRepo)
     product_service = ProductService(UserRepo(), ProductRepo())
@@ -98,6 +98,7 @@ def test_search_keyword_product(mock_init):
 
     result = product_service.search_product('ㅅㅍ', default_user())
     assert result[0].name == default_product().name
+    product_service.delete_product(id, default_user())
 
 def test_search_keyword_product_2(mock_init):
     auth_service, product_service =\
