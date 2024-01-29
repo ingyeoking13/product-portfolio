@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from typing import cast
+from time import time
 
 from src.routers.auth_router import AuthRouter
 from src.routers.product_router import ProductRouter
@@ -21,6 +22,14 @@ app.add_middleware(
 
 app.include_router(AuthRouter().router)
 app.include_router(ProductRouter().router)
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time()
+    response = await call_next(request)
+    process_time = time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
 
 @app.exception_handler(Exception)
 async def exception_handler(req: Request, exc: Exception):

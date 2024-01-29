@@ -60,7 +60,7 @@ if __name__ == '__main__':
     )
 
     session = Session(engine)
-    for i in range(100):
+    for i in range(100000):
         session.add(Product(**generate_fake_product()))
         session.commit()
 
