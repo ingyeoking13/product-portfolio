@@ -99,13 +99,13 @@ INSERT INTO product (id, category, price, raw_price, name, description, barcode,
 ('a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7a1', 'cat003', 15000, 17000, '샤샤', '이 상품은 신선한 과일로, 자연 그대로의 맛과 영양을 제공합니다. 유기농으로 재배되어 안전하고 건강한 먹거리를 보장합니다.', '1234567890125', '2024-06-30', '소', 'ggg', NULL, 'e5f6g7h8-i9j0-1234-k5l6-m7n8o9p0q1r2');
 
 
+drop function IF EXISTS `fn_choSearch`;
+
 CREATE FUNCTION `fn_choSearch`(`str` varchar(200)) RETURNS varchar(200) CHARSET utf8 
 BEGIN 
      declare returnStr varchar(200); 
-     declare cnt int; 
      declare i int; 
-     declare j int; 
-     declare tmpStr varchar(200); 
+     declare tmpStr varchar(1); 
 
      if str is null then 
          return ''; 
@@ -117,20 +117,24 @@ BEGIN
            set tmpStr = substring(str,i,1); 
            set returnStr = concat(ifnull(returnStr,''), 
 
-            case when ( tmpStr >= '가' AND tmpStr < '나' ) then 'ㄱ' 
+            case when ( tmpStr >= '가' AND tmpStr < '까' ) then 'ㄱ' 
+                 when ( tmpStr >= '까' AND tmpStr < '나' ) then 'ㄲ' 
                  when ( tmpStr >= '나' AND tmpStr < '다' ) then 'ㄴ' 
-                 when ( tmpStr >= '다' AND tmpStr < '라' ) then 'ㄷ' 
+                 when ( tmpStr >= '다' AND tmpStr < '따' ) then 'ㄷ' 
+                 when ( tmpStr >= '따' AND tmpStr < '라' ) then 'ㄸ' 
                  when ( tmpStr >= '라' AND tmpStr < '마' ) then 'ㄹ' 
                  when ( tmpStr >= '마' AND tmpStr < '바' ) then 'ㅁ' 
-                 when ( tmpStr >= '바' AND tmpStr < '사' ) then 'ㅂ' 
-                 when ( tmpStr >= '사' AND tmpStr < '아' ) then 'ㅅ' 
+                 when ( tmpStr >= '바' AND tmpStr < '빠' ) then 'ㅂ' 
+                 when ( tmpStr >= '빠' AND tmpStr < '사' ) then 'ㅃ' 
+                 when ( tmpStr >= '사' AND tmpStr < '싸' ) then 'ㅅ' 
+                 when ( tmpStr >= '싸' AND tmpStr < '아' ) then 'ㅆ' 
                  when ( tmpStr >= '아' AND tmpStr < '자' ) then 'ㅇ' 
                  when ( tmpStr >= '자' AND tmpStr < '차' ) then 'ㅈ' 
                  when ( tmpStr >= '차' AND tmpStr < '카' ) then 'ㅊ' 
                  when ( tmpStr >= '카' AND tmpStr < '타' ) then 'ㅋ' 
                  when ( tmpStr >= '타' AND tmpStr < '파' ) then 'ㅌ' 
                  when ( tmpStr >= '파' AND tmpStr < '하' ) then 'ㅍ' 
-            else 'ㅎ' end); 
+            else 'ㅉ' end); 
            set i=i+1; 
      end while; 
   RETURN returnStr; 
