@@ -27,3 +27,11 @@ class SearchRouter:
     ):
         search_service.insert_to_elastic()
         return Content(data=True)
+
+    @router.get('', response_model=Content[List[ProductDto]])
+    async def post_product(
+        keyword: str,
+        search_service: SearchService = Depends(SearchService)
+    ):
+        results = search_service.search(keyword)
+        return Content(data=results)
