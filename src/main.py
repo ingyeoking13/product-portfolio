@@ -7,6 +7,7 @@ from time import time
 
 from src.routers.auth_router import AuthRouter
 from src.routers.product_router import ProductRouter
+from src.routers.search_router import SearchRouter
 from src.exceptions.exceptions import DefaultException
 from src.exceptions.no_content import NoContentException, ExceptionsEnum
 from src.models.response_dto import Content, MetaContent
@@ -22,6 +23,7 @@ app.add_middleware(
 
 app.include_router(AuthRouter().router)
 app.include_router(ProductRouter().router)
+app.include_router(SearchRouter().router)
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):

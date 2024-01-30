@@ -112,3 +112,8 @@ class ProductRepo(Repo):
             ).all()
             return [ProductDto(**to_pydantic(product)) for product in products]
 
+    def get_all_product(self):
+        with self.session as session:
+            products = session.query(Product).all()
+
+            return [ProductDto(**to_pydantic(product)) for product in products]
